@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server"
 import { requireSession } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
-import pdf from "pdf-parse/index.js"
+import { PDFParse } from "pdf-parse"
 
 export async function POST(req: NextRequest) {
   const { session, error } = await requireSession()
@@ -15,14 +15,16 @@ export async function POST(req: NextRequest) {
     }
 
     const response = await fetch(resumeUrl)
-    const buffer   = Buffer.from(await response.arrayBuffer())
-    const parsed   = await pdf(buffer)
+    const buffer   = new Uint8Array(await response.arrayBuffer())
+    const parsed   = await new PDFParse(buffer)
+    const result = await parsed.getText()
+    const resumeText = result.text
 
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
         resumeUrl,
-        resumeText: parsed.text,
+        resumeText
       },
     })
 

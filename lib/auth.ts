@@ -1,10 +1,10 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import { prisma } from "./prisma";
 import GoogleProvider from "next-auth/providers/google";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma as Parameters<typeof PrismaAdapter>[0]),
+  adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
   secret: process.env.NEXTAUTH_SECRET,
 
   providers: [
@@ -33,23 +33,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = user.id;
       }
 
-      const account = await prisma.account.findFirst({
-        where: {
-          userId: user.id,
-          provider: "google",
-        },
-        select: {
-            access_token: true,
-            refresh_token: true,
-            expires_at: true
-        }
-      });
-
-      session.user.gmailAccessToken  = account?.access_token  ?? null
-      session.user.gmailRefreshToken = account?.refresh_token ?? null
-
       return session;
-    }
+    },
   },
 
   pages: {

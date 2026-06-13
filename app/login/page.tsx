@@ -14,7 +14,7 @@ export default function LoginPage() {
         </div>
 
         <button
-          onClick={() => signIn("google", { callbackUrl: "http://localhost:3000/dashboard" })}
+          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
           className="flex items-center justify-center gap-3 w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium text-gray-700"
         >
           <Image
