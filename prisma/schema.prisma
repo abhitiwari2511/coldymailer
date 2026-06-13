@@ -90,7 +90,7 @@ model Recipient {
   email            String
   name             String?
   generatedContent String?   @db.Text
-  statues          String    @default("pending") // pending, sent, failed
+  status           String    @default("pending") // pending, sent, failed
   sentAt           DateTime?
 
   // relations
