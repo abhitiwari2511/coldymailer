@@ -9,7 +9,7 @@ export async function GET(
   const { session, error } = await requireSession()
   if (error) return error
 
-  const { id } = params
+  const { id } = await params
 
   const campaign = await prisma.campaign.findFirst({
     where: {

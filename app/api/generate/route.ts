@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate email for each recipient
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     const results = await Promise.all(
       campaign.recipients.map(async (recipient) => {
