@@ -1,10 +1,8 @@
-"use client"
-
-import Link from "next/link"
-import { Menu } from "lucide-react"
-import { motion } from "motion/react"
-import { LogoMark } from "./shared/logo"
-import { PrimaryButton } from "./shared/primaryButton"
+import Link from "next/link";
+import { Menu } from "lucide-react";
+import * as motion from "motion/react-client";
+import { LogoMark } from "./shared/logo";
+import { PrimaryButton } from "./shared/primaryButton";
 
 export function Navbar() {
   return (
@@ -16,22 +14,26 @@ export function Navbar() {
     >
       <div className="flex items-center gap-3">
         <LogoMark />
-        <span className="font-bold tracking-tight text-xl hidden sm:block">ColdyMailer AI</span>
+        <span className="font-bold tracking-tight text-xl hidden sm:block">
+          ColdyMailer AI
+        </span>
       </div>
 
       <div className="hidden md:flex gap-8 items-center">
-        {["Product", "Integrations", "Pricing", "Documentation"].map((item, i) => (
-          <motion.a
-            key={item}
-            href="#"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.05, duration: 0.5 }}
-            className="text-white/70 text-sm font-medium hover:text-white transition-colors"
-          >
-            {item}
-          </motion.a>
-        ))}
+        {["Product", "Pricing"].map(
+          (item, i) => (
+            <motion.a
+              key={item}
+              href="#"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.05, duration: 0.5 }}
+              className="text-white/70 text-sm font-medium hover:text-white transition-colors"
+            >
+              {item}
+            </motion.a>
+          ),
+        )}
       </div>
 
       <div className="hidden md:flex items-center gap-4">
@@ -44,5 +46,5 @@ export function Navbar() {
         <Menu className="w-5 h-5 text-white" />
       </button>
     </motion.nav>
-  )
+  );
 }
