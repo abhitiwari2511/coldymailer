@@ -1,9 +1,23 @@
-import Image from "next/image";
+import { Navbar } from "@/components/landing/navbar"
+import { Hero } from "@/components/landing/hero"
+import { Features } from "@/components/landing/features"
+import { NoiseFilter } from "@/components/landing/noiseFilter"
+import VideoBackground from "@/components/layout/appBackground"
+import { Pricing } from "@/components/landing/pricing"
+import { Footer } from "@/components/landing/footer"
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-     hello there it is main dash page
+    <div className="min-h-screen bg-zinc-900 text-white selection:bg-brand/30 font-sans overflow-x-hidden relative">
+      <NoiseFilter />
+      <VideoBackground />
+      <Navbar />
+      <main className="relative z-10">
+        <Hero />
+        <Features />
+        <Pricing />
+      </main>
+      <Footer />
     </div>
-  );
+  )
 }
