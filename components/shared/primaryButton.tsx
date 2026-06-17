@@ -11,12 +11,12 @@ interface PrimaryButtonProps {
 export function PrimaryButton({
   label = "Start for free",
   full = false,
-  icon = <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-[1px]" />,
+  icon = <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-px" />,
 }: PrimaryButtonProps) {
   return (
     <Button
       className={cn(
-        "group inline-flex items-center justify-center gap-2 h-11 rounded-full bg-white text-black font-medium text-sm px-5 py-3 transition-all hover:bg-white/90 active:scale-[0.98]",
+        "group inline-flex cursor-pointer items-center justify-center gap-2 h-11 rounded-full bg-white text-black font-medium text-sm px-5 py-3 transition-all hover:bg-white/90 active:scale-[0.98]",
         full && "w-full"
       )}
     >

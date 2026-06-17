@@ -8,7 +8,7 @@ import { Footer } from "@/components/landing/footer"
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-zinc-900 text-white selection:bg-brand/30 font-sans overflow-x-hidden relative">
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-brand/30 font-sans overflow-x-hidden relative">
       <NoiseFilter />
       <VideoBackground />
       <Navbar />

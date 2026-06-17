@@ -1,7 +1,7 @@
-import Link from "next/link"
-import * as motion from "motion/react-client"
-import { ChevronRight, CheckCircle2 } from "lucide-react"
-import { PrimaryButton } from "./shared/primaryButton"
+import Link from "next/link";
+import * as motion from "motion/react-client";
+import { ChevronRight, CheckCircle2 } from "lucide-react";
+import { PrimaryButton } from "../shared/primaryButton";
 
 export function Hero() {
   return (
@@ -37,7 +37,8 @@ export function Hero() {
         className="mt-6 text-white/60 max-w-xl mx-auto text-base md:text-lg leading-[1.6]"
       >
         Upload your resume, describe your dream internship, and let our AI draft
-        highly-personalized emails for every recruiter. Sent natively through your Gmail.
+        highly-personalized emails for every recruiter. Sent natively through
+        your Gmail.
       </motion.p>
 
       <motion.div
@@ -49,14 +50,16 @@ export function Hero() {
         <Link href="/login">
           <PrimaryButton
             label="Sign in with Google"
-            icon={<ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />}
+            icon={
+              <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+            }
           />
         </Link>
         <div className="flex items-center gap-2 text-xs text-white/40">
-          <CheckCircle2 className="w-3.5 h-3.5" /> No credit card required. Free 50 emails/mo.
+          <CheckCircle2 className="w-3.5 h-3.5" /> No credit card required. Free
+          50 emails/mo.
         </div>
       </motion.div>
     </section>
-  )
+  );
 }
-

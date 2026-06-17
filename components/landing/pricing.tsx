@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import * as motion from "motion/react-client"
-import { Sparkles, CheckCircle2 } from "lucide-react"
-import { PrimaryButton } from "./shared/primaryButton"
+import Link from "next/link";
+import * as motion from "motion/react-client";
+import { Sparkles, CheckCircle2 } from "lucide-react";
+import { PrimaryButton } from "../shared/primaryButton";
 
 export function Pricing() {
   return (
@@ -16,13 +16,24 @@ export function Pricing() {
           transition={{ duration: 0.7 }}
           className="flex-1"
         >
-          <h2 className="text-3xl md:text-5xl font-semibold tracking-tight">Stop wasting time on <br className="hidden md:block"/>cover letters.</h2>
+          <h2 className="text-3xl md:text-5xl font-semibold tracking-tight">
+            Stop wasting time on <br className="hidden md:block" />
+            cover letters.
+          </h2>
           <p className="mt-5 text-white/50 text-lg leading-[1.5] max-w-md">
-            Start sending personalized cold emails that actually convert to interviews.
+            Start sending personalized cold emails that actually convert to
+            interviews.
           </p>
           <ul className="mt-8 space-y-3">
-            {["50 free AI generated emails/month", "Automatic Gmail dispatch", "Resume parsing & context extraction"].map((item) => (
-              <li key={item} className="flex items-center gap-3 text-sm text-white/80">
+            {[
+              "50 free AI generated emails/month",
+              "Automatic Gmail dispatch",
+              "Resume parsing & context extraction",
+            ].map((item) => (
+              <li
+                key={item}
+                className="flex items-center gap-3 text-sm text-white/80"
+              >
                 <CheckCircle2 className="w-4 h-4 text-brand" /> {item}
               </li>
             ))}
@@ -60,5 +71,5 @@ export function Pricing() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
