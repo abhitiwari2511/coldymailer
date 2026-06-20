@@ -12,13 +12,10 @@ export function Footer() {
           </span>
         </div>
         <div className="flex gap-6 text-sm text-white/80 font-medium">
-          <Link href="#" className="hover:text-white transition-colors">
-            Twitter
-          </Link>
-          <Link href="#" className="hover:text-white transition-colors">
+          <Link href="/terms" className="hover:text-white transition-colors">
             Terms
           </Link>
-          <Link href="#" className="hover:text-white transition-colors">
+          <Link href="/privacy" className="hover:text-white transition-colors">
             Privacy
           </Link>
         </div>
