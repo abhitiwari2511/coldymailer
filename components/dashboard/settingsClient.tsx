@@ -20,6 +20,7 @@ export function SettingsClient({ user }: Props) {
 
   async function handleUpload(result: CloudinaryUploadWidgetResults) {
     if (typeof result.info !== "object" || !result.info) return
+    // console.log(result.info);
 
     const url = result.info.secure_url
     setSaving(true)
