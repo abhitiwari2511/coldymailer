@@ -1,7 +1,7 @@
-import "@/lib/pdf-polyfills"; // Must be first — polyfills DOMMatrix/ImageData/Path2D for serverless
 import { NextRequest } from "next/server";
 import { requireSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { extractText, getDocumentProxy } from "unpdf";
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
@@ -69,14 +69,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // pdf text — dynamic import so polyfills are applied before pdfjs-dist loads
+    // pdf text — using unpdf (serverless-compatible, no canvas/worker needed)
     let resumeText = "";
     try {
-      const { PDFParse } = await import("pdf-parse");
-      const parser = new PDFParse({ data: new Uint8Array(buffer) });
-      const result = await parser.getText();
-      resumeText = result.text?.trim() ?? "";
-      await parser.destroy();
+      const pdf = await getDocumentProxy(new Uint8Array(buffer));
+      const { text } = await extractText(pdf, { mergePages: true });
+      resumeText = text.trim();
     } catch (pdfErr) {
       console.error("PDF parse error:", pdfErr);
       return Response.json(
