@@ -136,7 +136,7 @@ export function CreditsClient({ initialCredits }: { initialCredits: number }) {
         : { label: "Critical", color: "text-red-400", bg: "bg-red-400" };
 
   return (
-    <div className="p-8 max-w-5xl h-full scroll-auto">
+    <div className="p-8 w-full h-full overflow-y-scroll">
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center">
           <Coins className="w-5 h-5 text-brand" />

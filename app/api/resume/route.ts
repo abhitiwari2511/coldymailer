@@ -1,3 +1,4 @@
+import "@/lib/pdf-polyfills"; // Must be first — polyfills DOMMatrix/ImageData/Path2D for serverless
 import { NextRequest } from "next/server";
 import { requireSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
