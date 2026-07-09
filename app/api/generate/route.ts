@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { requireSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { consumeCredit, InsufficientCreditsError } from "@/lib/credits";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -42,6 +43,24 @@ export async function POST(req: NextRequest) {
         { error: "No resume found for this user" },
         { status: 400 },
       );
+    }
+
+    // Check and consume 1 credit before generating any mail
+    try {
+      await consumeCredit(session.user.id, campaign.recipients.length, "generate_emails");
+    } catch (creditError) {
+      if (creditError instanceof InsufficientCreditsError) {
+        return Response.json(
+          {
+            error: "Insufficient credits",
+            message: "You don't have enough credits to generate emails. Please buy more credits.",
+            creditsAvailable: creditError.available,
+            creditsRequired: creditError.required,
+          },
+          { status: 402 },
+        );
+      }
+      throw creditError;
     }
 
     // Generate email for each recipient

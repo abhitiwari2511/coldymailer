@@ -3,20 +3,38 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
+import { useState, useEffect } from "react"
 import {
   LayoutDashboard, Megaphone,
-  Settings, LogOut
+  Settings, LogOut, Coins
 } from "lucide-react"
 import { LogoMark } from "@/components/shared/logo"
 
 const navItems = [
   { name: "Dashboard",  icon: LayoutDashboard, path: "/dashboard",            exact: true  },
   { name: "Campaigns",  icon: Megaphone,        path: "/dashboard/campaigns",  exact: false },
+  { name: "Credits",    icon: Coins,            path: "/dashboard/credits",    exact: false },
   { name: "Settings",   icon: Settings,         path: "/dashboard/settings",   exact: false },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
+  const [credits, setCredits] = useState<number | null>(null)
+
+  useEffect(() => {
+    async function fetchCredits() {
+      try {
+        const res = await fetch("/api/credits")
+        const data = await res.json()
+        setCredits(data.credits)
+      } catch {
+        if (!credits) {
+          return 
+        }
+      }
+    }
+    fetchCredits()
+  }, [pathname]) 
 
   function isActive(path: string, exact: boolean) {
     return exact ? pathname === path : pathname.startsWith(path)
@@ -48,6 +66,19 @@ export function Sidebar() {
           >
             <item.icon className="w-4 h-4" />
             {item.name}
+            {item.name === "Credits" && credits !== null && (
+              <span
+                className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  credits >= 5
+                    ? "bg-emerald-500/10 text-emerald-400"
+                    : credits > 0
+                      ? "bg-yellow-500/10 text-yellow-400"
+                      : "bg-red-500/10 text-red-400"
+                }`}
+              >
+                {credits}
+              </span>
+            )}
           </Link>
         ))}
       </div>

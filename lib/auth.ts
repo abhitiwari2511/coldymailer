@@ -2,9 +2,12 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { NextAuthOptions } from "next-auth";
 import { prisma } from "./prisma";
 import GoogleProvider from "next-auth/providers/google";
+import { addCredits } from "./credits";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
+  adapter: PrismaAdapter(
+    prisma as unknown as Parameters<typeof PrismaAdapter>[0],
+  ),
   secret: process.env.NEXTAUTH_SECRET,
 
   providers: [
@@ -27,7 +30,22 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
+  events: {
+    async createUser({ user }) {
+      // Add 15 credits to new users only after user is inserted in db
+      if (user.id) {
+        await addCredits(user.id, 15, "trial_bonus");
+      }
+    },
+  },
+
   callbacks: {
+    async signIn({ user }) {
+      if (!user.id) return true;
+
+      return true;
+    },
+
     async session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;
@@ -42,6 +60,6 @@ export const authOptions: NextAuthOptions = {
   },
 
   session: {
-    strategy: "database"
-  }
+    strategy: "database",
+  },
 };

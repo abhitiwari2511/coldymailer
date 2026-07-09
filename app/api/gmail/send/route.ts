@@ -2,6 +2,8 @@ import { NextRequest } from "next/server"
 import { requireSession } from "@/lib/session"
 import { prisma } from "@/lib/prisma"
 import { google } from "googleapis"
+import { consumeCredit, InsufficientCreditsError } from "@/lib/credits"
+import MailComposer from "nodemailer/lib/mail-composer"
 
 function createGmailClient(accessToken: string, refreshToken: string) {
   const oauth2Client = new google.auth.OAuth2(
@@ -17,19 +19,29 @@ function createGmailClient(accessToken: string, refreshToken: string) {
   return google.gmail({ version: "v1", auth: oauth2Client })
 }
 
-function buildEmailRaw(to: string, subject: string, body: string, from: string): string {
-  const email = [
-    `From: ${from}`,
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    `MIME-Version: 1.0`,
-    `Content-Type: text/plain; charset=utf-8`,
-    ``,
-    body,
-  ].join("\n")
+/**
+ * Use nodemailer's MailComposer to build a RFC 2822 compliant
+ * MIME message, then encode it for the Gmail API.
+ */
+async function buildRawEmail(opts: {
+  from: string
+  to: string
+  subject: string
+  text: string
+  attachments?: { filename: string; content: Buffer; contentType: string }[]
+}): Promise<string> {
+  const mail = new MailComposer({
+    from:        opts.from,
+    to:          opts.to,
+    subject:     opts.subject,
+    text:        opts.text,
+    attachments: opts.attachments,
+  })
 
-  // Gmail API requires base64url encoding
-  return Buffer.from(email)
+  const message = await mail.compile().build()
+
+  // Gmail API expects base64url encoding
+  return message
     .toString("base64")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
@@ -38,6 +50,18 @@ function buildEmailRaw(to: string, subject: string, body: string, from: string):
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Fetch a PDF from a URL and return it as a Buffer
+ */
+async function fetchPdfBuffer(url: string): Promise<Buffer> {
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch PDF: ${res.status} ${res.statusText}`)
+  }
+  const arrayBuffer = await res.arrayBuffer()
+  return Buffer.from(arrayBuffer)
 }
 
 export async function POST(req: NextRequest) {
@@ -70,7 +94,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Get campaign + pending recipients
+    // Get campaign + pending recipients + user resume info
     const campaign = await prisma.campaign.findFirst({
       where: {
         id:     campaignId,
@@ -81,6 +105,12 @@ export async function POST(req: NextRequest) {
           where: {
             status:           "pending",
             generatedContent: { not: null },
+          },
+        },
+        user: {
+          select: {
+            resumeUrl: true,
+            name:      true,
           },
         },
       },
@@ -97,6 +127,51 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Check and consume 1 credit before sending
+    try {
+      await consumeCredit(session.user.id, 1, "send_campaign")
+    } catch (creditErr) {
+      if (creditErr instanceof InsufficientCreditsError) {
+        return Response.json(
+          {
+            error: "Insufficient credits",
+            message: "You don't have enough credits to send emails. Please buy more credits.",
+            creditsAvailable: creditErr.available,
+            creditsRequired: creditErr.required,
+          },
+          { status: 402 },
+        )
+      }
+      throw creditErr
+    }
+
+    // If campaign has attachResume, fetch the PDF once for all recipients
+    let pdfAttachment: { filename: string; content: Buffer; contentType: string } | null = null
+
+    if (campaign.attachResume && campaign.user.resumeUrl) {
+      try {
+        const pdfBuffer = await fetchPdfBuffer(campaign.user.resumeUrl)
+
+        // Derive a clean filename from the user's name
+        const nameSlug = (campaign.user.name ?? "resume")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_|_$/g, "")
+
+        pdfAttachment = {
+          filename:    `${nameSlug}_resume.pdf`,
+          content:     pdfBuffer,
+          contentType: "application/pdf",
+        }
+      } catch (fetchErr) {
+        console.error("Failed to fetch resume PDF for attachment:", fetchErr)
+        return Response.json(
+          { error: "Failed to fetch resume PDF for attachment" },
+          { status: 500 }
+        )
+      }
+    }
+
     const gmail = createGmailClient(account.access_token, account.refresh_token)
 
     const results = []
@@ -104,12 +179,13 @@ export async function POST(req: NextRequest) {
     // Sending one by one with delay to avoid getting as spam
     for (const recipient of campaign.recipients) {
       try {
-        const raw = buildEmailRaw(
-          recipient.email,
-          campaign.subject,
-          recipient.generatedContent!,
-          session.user.email!,
-        )
+        const raw = await buildRawEmail({
+          from:    session.user.email!,
+          to:      recipient.email,
+          subject: campaign.subject,
+          text:    recipient.generatedContent!,
+          attachments: pdfAttachment ? [pdfAttachment] : undefined,
+        })
 
         await gmail.users.messages.send({
           userId:      "me",

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles, Send, X, Check, RefreshCw } from "lucide-react"
+import { Sparkles, Send, X, Check, RefreshCw, Paperclip } from "lucide-react"
 
 const ChevronLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m15 18-6-6 6-6"/></svg>
@@ -17,6 +17,7 @@ export function NewCampaignClient() {
   const [generated,  setGenerated]  = useState<{ email: string; content: string }[]>([])
   const [selectedIdx, setSelectedIdx] = useState(0)
   const [campaignId, setCampaignId] = useState<string | null>(null)
+  const [attachResume, setAttachResume] = useState(true)
   const [loading,    setLoading]    = useState<"create" | "generate" | "send" | null>(null)
   const [error,      setError]      = useState<string | null>(null)
 
@@ -41,7 +42,7 @@ export function NewCampaignClient() {
       const res  = await fetch("/api/campaigns", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ subject, context, recipients }),
+        body:    JSON.stringify({ subject, context, recipients, attachResume }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -129,6 +130,36 @@ export function NewCampaignClient() {
                 className="w-full bg-transparent text-sm text-white resize-none outline-none min-h-[100px]"
                 placeholder="e.g. Looking for a Frontend Developer Internship. Mention my experience in React, Next.js..."
               />
+            </div>
+
+            {/* Attach Resume Toggle */}
+            <div className="flex items-center justify-between bg-white/[0.04] border border-white/10 rounded-xl p-3 mt-3">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                  attachResume ? "bg-brand/20 text-brand" : "bg-white/5 text-white/30"
+                }`}>
+                  <Paperclip className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium">Attach Resume</div>
+                  <div className="text-xs text-white/40">Include your PDF resume with each email</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={attachResume}
+                onClick={() => setAttachResume(!attachResume)}
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+                  attachResume ? "bg-brand" : "bg-white/10"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                    attachResume ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
             </div>
 
             {!campaignId ? (

@@ -13,18 +13,18 @@ datasource db {
 }
 
 model Account {
-  id                String  @id @default(uuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
+  id                       String  @id @default(uuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.Text
+  access_token             String? @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.Text
+  session_state            String?
   refresh_token_expires_in Int?
 
   // relations
@@ -54,7 +54,7 @@ model VerificationToken {
 model User {
   id            String    @id @default(uuid())
   name          String?
-  email         String?   @unique
+  email         String?   @unique 
   emailVerified DateTime?
   image         String?
 
@@ -62,13 +62,34 @@ model User {
   resumeUrl  String?
   resumeText String? @db.Text
 
+  // credits system
+  credits Int @default(0)
+
   // relations
-  accounts  Account[]
-  sessions  Session[]
-  campaigns Campaign[]
+  accounts           Account[]
+  sessions           Session[]
+  campaigns          Campaign[]
+  creditTransactions CreditTransaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model CreditTransaction {
+  id     String @id @default(uuid())
+  userId String
+  type   String // "debit" hua ya "credit"
+  amount Int
+  reason String // e.g. "generate_emails", "send_campaign", "purchase", "trial_bonus"
+
+  // balance snapshot after this transaction
+  balanceAfter Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 model Campaign {
@@ -80,6 +101,8 @@ model Campaign {
   // relations
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   recipients Recipient[]
+
+  attachResume Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

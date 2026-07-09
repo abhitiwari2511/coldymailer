@@ -6,33 +6,45 @@ import {
   Megaphone,
   Send,
   CheckCircle2,
-  Users,
   ChevronRight,
   Plus,
+  Coins,
 } from "lucide-react";
 
 async function getDashboardData(userId: string) {
-  const campaigns = await prisma.campaign.findMany({
-    where: { userId },
-    include: { recipients: true },
-    orderBy: { createdAt: "desc" },
-    take: 5,
-  });
+  const [campaigns, user] = await Promise.all([
+    prisma.campaign.findMany({
+      where: { userId },
+      include: { recipients: true },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { credits: true },
+    }),
+  ]);
 
   const allRecipients = campaigns.flatMap((c) => c.recipients);
   const totalSent = allRecipients.filter((r) => r.status === "sent").length;
   const totalFailed = allRecipients.filter((r) => r.status === "failed").length;
 
-  return { campaigns, totalSent, totalFailed };
+  return { campaigns, totalSent, totalFailed, credits: user?.credits ?? 0 };
 }
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
-  const { campaigns, totalSent } = await getDashboardData(session!.user.id);
+  const { campaigns, totalSent, credits } = await getDashboardData(session!.user.id);
 
   const firstName = session!.user.name?.split(" ")[0] ?? "there";
 
   const stats = [
+    {
+      label: "Credits",
+      value: String(credits),
+      icon: Coins,
+      color: credits >= 5 ? "text-emerald-400" : credits > 0 ? "text-yellow-400" : "text-red-400",
+    },
     {
       label: "Campaigns",
       value: String(campaigns.length),
@@ -45,7 +57,6 @@ export default async function DashboardPage() {
       icon: Send,
       color: "text-white",
     },
-    { label: "Open Rate", value: "—", icon: Users, color: "text-[#A4F4FD]" },
     {
       label: "Replies",
       value: "—",
