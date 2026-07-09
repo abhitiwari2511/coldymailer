@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { subject, context, recipients } = body
+    const { subject, context, recipients, attachResume } = body
 
     // inputs validation
     if (!subject || !context || !recipients?.length) {
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
         userId:  session.user.id,
         subject,
         context,
+        attachResume: attachResume === true,
         recipients: {
           create: recipients.map((email: string) => ({
             email:  email.trim().toLowerCase(),

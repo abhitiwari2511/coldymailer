@@ -2,7 +2,6 @@ import "@/lib/pdf-polyfills"; // Must be first — polyfills DOMMatrix/ImageData
 import { NextRequest } from "next/server";
 import { requireSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { PDFParse } from "pdf-parse";
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
@@ -70,14 +69,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // pdf text
+    // pdf text — dynamic import so polyfills are applied before pdfjs-dist loads
     let resumeText = "";
     try {
+      const { PDFParse } = await import("pdf-parse");
       const parser = new PDFParse({ data: new Uint8Array(buffer) });
       const result = await parser.getText();
       resumeText = result.text?.trim() ?? "";
       await parser.destroy();
-    } catch {
+    } catch (pdfErr) {
+      console.error("PDF parse error:", pdfErr);
       return Response.json(
         {
           error: "Could not read PDF. Make sure it is not password protected.",
